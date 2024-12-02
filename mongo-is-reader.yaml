@@ -1,0 +1,81 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongo-is-reader
+  namespace: mpaa
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mongo-is-reader
+  template:
+    metadata:
+      labels:
+        app: mongo-is-reader
+    spec:
+      containers:
+        - name: mongo-is-reader
+          image: registry.gitlab.com/bp-sojka/mppa/mongo-is-reader:latest
+          ports:
+            - containerPort: 9090
+          env:
+            - name: MONGO_USER
+              value: root
+            - name: MONGO_PASSWORD
+              value: root
+            - name: MONGO_ADDRESS
+              value: "mongodb://mongo-replica-set-0.mongo-is-database.mpaa.svc.cluster.local:27017"
+          resources:
+            requests:
+              memory: "512Mi" 
+              cpu: "500m"     
+            limits:
+              memory: "1Gi"    
+              cpu: "1"       
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongo-is-reader-service
+  namespace: mpaa
+spec:
+  selector:
+    app: mongo-is-reader
+  ports:
+    - protocol: TCP
+      port: 9090
+      targetPort: 9090
+  type: ClusterIP
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: mongo-is-reader-ingress
+  namespace: mpaa
+spec:
+  ingressClassName: "traefik"
+  rules:
+    - host: mpaa-reader.jcu.garrulus.cz
+      http:
+        paths:
+          - pathType: Prefix
+            path: /api/data/getAll
+            backend:
+              service:
+                name: mongo-is-reader-service
+                port:
+                  number: 9090
+          - pathType: Prefix
+            path: /api/data/getLinks
+            backend:
+              service:
+                name: mongo-is-reader-service
+                port:
+                  number: 9090
+          - pathType: Prefix
+            path: /api/data/getByLink
+            backend:
+              service:
+                name: mongo-is-reader-service
+                port:
+                  number: 9090

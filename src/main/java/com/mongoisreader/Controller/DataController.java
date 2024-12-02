@@ -100,8 +100,6 @@ public class DataController {
             if(mongoUtils.isProcessing()){
                return new ResponseEntity<>(HttpStatus.PROCESSING); 
             }
-        
-        
             if(helperService.isTokenValid(token)){
                 try {
                     JsonNode doc = mongoUtils.getMetadataByLink(collection,link);
@@ -111,8 +109,7 @@ public class DataController {
                     return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
                 } catch (Exception ex) {
                     Logger.getLogger(DataController.class.getName()).log(Level.SEVERE, null, ex);
-                    return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-                    
+                    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
                 }
             }
             else{
