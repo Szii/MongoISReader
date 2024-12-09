@@ -14,6 +14,7 @@ import com.mongodb.MongoCommandException;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.MongoIterable;
+import com.mongodb.client.model.Filters;
 import java.util.ArrayList;
 import java.util.List;
 import org.bson.Document;
@@ -36,10 +37,11 @@ public class MongoUtils {
      
      private boolean isProcessing = false;
 
-     
+     private final IdFetcherService idFetcher;
      @Autowired
      ObjectMapper objectMapper;
-     public MongoUtils(MongoDatabase database){
+     public MongoUtils(MongoDatabase database,IdFetcherService idFetcher){
+         this.idFetcher = idFetcher;
          this.database = database;
         
      }
@@ -115,14 +117,34 @@ public class MongoUtils {
     
     
     
-public JsonNode getMongoCollectionAsJson(String collectionName) throws JsonProcessingException {
-    ArrayNode arrayNode = objectMapper.createArrayNode();
-    for (Document doc : getMongoCollection(collectionName).find()) {
-        JsonNode jsonNode = objectMapper.readTree(doc.toJson());
-        arrayNode.add(jsonNode); 
+    public JsonNode getMongoCollectionAsJson(String collectionName) throws JsonProcessingException {
+        ArrayNode arrayNode = objectMapper.createArrayNode();
+        for (Document doc : getMongoCollection(collectionName).find()) {
+            JsonNode jsonNode = objectMapper.readTree(doc.toJson());
+            arrayNode.add(jsonNode); 
+        }
+        return arrayNode;
     }
-    return arrayNode;
-}
+    
+    public JsonNode getDocumentByID(String collectionName, Integer id) throws JsonProcessingException{
+        String pdfId = idFetcher.fetchIdWithRetry(id, "PDF");
+        String docxId = idFetcher.fetchIdWithRetry(id, "DOCX");
+         
+        Document doc = getMongoCollection(collectionName).find(Filters.eq("znění-dokument-id", id)).first();
+        if (pdfId != null) {
+            doc.append("odkaz-stažení-pdf", "https://www.e-sbirka.cz/souborove-sluzby/soubory/" + pdfId);
+        }
+        else{
+             doc.append("odkaz-stažení-pdf", null);
+        }
+        if (docxId != null) {
+            doc.append("odkaz-stažení-docx", "https://www.e-sbirka.cz/souborove-sluzby/soubory/" + docxId);
+        }
+        else{
+           doc.append("odkaz-stažení-docx", null);  
+        }
+        return objectMapper.readTree(doc.toJson());
+    }
     
      public JsonNode getLinksFromCollection(String collectionName) throws JsonProcessingException{
            ArrayNode arrayNode = objectMapper.createArrayNode();

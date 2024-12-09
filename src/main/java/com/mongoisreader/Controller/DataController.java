@@ -117,6 +117,28 @@ public class DataController {
             }
     }
     
+    @GetMapping("/getByID")
+    public ResponseEntity<JsonNode> getOneByID(@RequestHeader("Authorization") String token, @RequestParam("id")String id) {
+            if(mongoUtils.isProcessing()){
+               return new ResponseEntity<>(HttpStatus.PROCESSING); 
+            }
+            if(helperService.isTokenValid(token)){
+                try {
+                    JsonNode doc = mongoUtils.getDocumentByID(collection,Integer.valueOf(id));
+                     return new ResponseEntity<>(doc, HttpStatus.OK);
+                } catch (JsonProcessingException ex) {
+                    Logger.getLogger(DataController.class.getName()).log(Level.SEVERE, null, ex);
+                    return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+                } catch (Exception ex) {
+                    Logger.getLogger(DataController.class.getName()).log(Level.SEVERE, null, ex);
+                    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+                }
+            }
+            else{
+               return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+            }
+    }
+    
     
          
 }
