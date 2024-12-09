@@ -139,6 +139,25 @@ public class DataController {
             }
     }
     
-    
-         
+    @GetMapping("/getByDesignation")
+    public ResponseEntity<JsonNode> getOneByDesignation(@RequestHeader("Authorization") String token, @RequestParam("designation")String designation) {
+            if(mongoUtils.isProcessing()){
+               return new ResponseEntity<>(HttpStatus.PROCESSING); 
+            }
+            if(helperService.isTokenValid(token)){
+                try {
+                    JsonNode doc = mongoUtils.getDocumentByDesignation(collection,designation);
+                     return new ResponseEntity<>(doc, HttpStatus.OK);
+                } catch (JsonProcessingException ex) {
+                    Logger.getLogger(DataController.class.getName()).log(Level.SEVERE, null, ex);
+                    return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+                } catch (Exception ex) {
+                    Logger.getLogger(DataController.class.getName()).log(Level.SEVERE, null, ex);
+                    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+                }
+            }
+            else{
+               return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+            }
+    }   
 }

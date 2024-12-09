@@ -116,6 +116,13 @@ public class MongoUtils {
     
     
     
+    public JsonNode getDocumentByDesignation(String collectionName, String designation) throws JsonProcessingException{
+        Document doc = getMongoCollection(collectionName).find(Filters.eq("akt-plné-označení", designation)).first();
+        return objectMapper.readTree(appendLinks(doc).toJson());
+    }
+    
+
+    
     
     public JsonNode getMongoCollectionAsJson(String collectionName) throws JsonProcessingException {
         ArrayNode arrayNode = objectMapper.createArrayNode();
@@ -127,10 +134,15 @@ public class MongoUtils {
     }
     
     public JsonNode getDocumentByID(String collectionName, Integer id) throws JsonProcessingException{
-        String pdfId = idFetcher.fetchIdWithRetry(id, "PDF");
-        String docxId = idFetcher.fetchIdWithRetry(id, "DOCX");
-         
         Document doc = getMongoCollection(collectionName).find(Filters.eq("znění-dokument-id", id)).first();
+        return objectMapper.readTree(appendLinks(doc).toJson());
+    }
+    
+    
+    
+    private Document appendLinks(Document doc){
+        String pdfId = idFetcher.fetchIdWithRetry(doc.getInteger("znění-dokument-id"), "PDF");
+        String docxId = idFetcher.fetchIdWithRetry(doc.getInteger("znění-dokument-id"), "DOCX");
         if (pdfId != null) {
             doc.append("odkaz-stažení-pdf", "https://www.e-sbirka.cz/souborove-sluzby/soubory/" + pdfId);
         }
@@ -143,7 +155,7 @@ public class MongoUtils {
         else{
            doc.append("odkaz-stažení-docx", null);  
         }
-        return objectMapper.readTree(doc.toJson());
+        return doc;
     }
     
      public JsonNode getLinksFromCollection(String collectionName) throws JsonProcessingException{
