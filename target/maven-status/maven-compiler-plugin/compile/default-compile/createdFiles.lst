@@ -1,0 +1,14 @@
+com\mongoisreader\Configuration\MongoConfig.class
+com\mongoisreader\Controller\DataController.class
+com\mongoisreader\Service\MongoUtils.class
+com\mongoisreader\Model\Chunk.class
+com\mongoisreader\Service\ChunkingService.class
+com\mongoisreader\Service\IdFetcherService.class
+com\mongoisreader\Main.class
+com\mongoisreader\Configuration\WebConfig.class
+com\mongoisreader\Controller\ControllerHelperService.class
+com\mongoisreader\Controller\ProcessingController.class
+com\mongoisreader\Configuration\ApiConfig.class
+com\mongoisreader\Configuration\MongoConnector.class
+com\mongoisreader\Exception\UnsupportedFileTypeException.class
+com\mongoisreader\Service\IdFetcherService$1.class
